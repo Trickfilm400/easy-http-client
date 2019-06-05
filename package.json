@@ -10,6 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/Feuerhamster/easy-http-client.git"
   },
+  "keywords":["request","http","client","easy","web"],
   "author": "Feuerhamster",
   "license": "GPL-3.0",
   "bugs": {
