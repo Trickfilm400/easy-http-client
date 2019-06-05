@@ -1,5 +1,11 @@
+/*
+This code is under GPL-3.0 License
+Author: Feuerhamster
+GitHub: https://github.com/Feuerhamster/easy-request
+*/
+
 //make a new class
-class requestManager{
+class easyHTTPClient{
 
     //define constructor function
     constructor(){
@@ -18,13 +24,13 @@ class requestManager{
         //check if required data exists
         if(assignment.method && assignment.host && typeof assignment.success == "function" && assignment.path){
 
-            //set port if data is not avalible
+            //set port if port is not set
             if(!assignment.port){
                 //check if ssl is activated and set the default port
                 if(assignment.ssl){
                     var port = 443;
                 }else{
-                    var port = 80
+                    var port = 80;
                 }
             }else{
                 //if a custom port is specified, take them
@@ -83,7 +89,7 @@ class requestManager{
             var req = http_module.request(options, (res)=>{
 
                 //check if cookies are set
-                if(res.headers['set-cookie']){
+                if(res.headers['set-cookie'] && !assignment.ignoreCookies){
 
                     //get the cookie string
                     var cookies = res.headers['set-cookie'];
@@ -92,11 +98,12 @@ class requestManager{
                     if(!this.cookies[assignment.host]){
                         this.cookies[assignment.host] = [];
                     }
+                    //save the cookies into the cookie storage
                     this.cookies[assignment.host] = cookies;
 
                 }
 
-                //create variable
+                //create variable for the return data of the request
                 var data = "";
 
                 //handle data event
@@ -123,21 +130,28 @@ class requestManager{
                 }
             });
 
-            // Write data to request body an end the request
-            if(assignment.method == "POST"  || assignment.method == "PUT"){
-                req.write(data);
-            }
-
+            //check if cookies for this host are set
             if(this.cookies[assignment.host]){
+                //send the cookies with the request
                 req.setHeader('Cookie',this.cookies[assignment.host]);
             }
+
+            //check if custom headers are set
             if(assignment.headers){
+                //convert header object to array
                 var headersArray = Object.entries(assignment.headers).map(([key, value]) => ({key,value}));
+                //add custom headers to the request
                 headersArray.forEach(header => {
                     req.setHeader(header.key, header.value);
                 });
             }
 
+            // Write data to request body an end the request
+            if(assignment.method == "POST"  || assignment.method == "PUT"){
+                req.write(data);
+            }
+
+            //end request
             req.end();
 
         }else{
@@ -148,23 +162,74 @@ class requestManager{
     }
 
     getAllCookies(){
-        return this.cookies;
+
+        //return an object with all cookies as strings in array and a toObject function
+        return {data: this.cookies, toObject: function(){
+            
+            const hosts = Object.entries(this.data);
+            
+            var allCookies = {};
+
+            for(const [host, cookies] of hosts){
+
+                var cookieData = [];
+
+                cookies.forEach(cookie => {
+                    
+                    var el = cookie.split('; ');
+                    el = el[0].split('=');
+
+                    var cookieObject = {}
+                    cookieObject[el[0]] = el[1];
+                    cookieData.push(cookieObject);
+
+                });
+
+                allCookies[host] = cookieData;
+
+            }
+
+            return allCookies;
+
+        }};
     }
 
     getCookies(host){
-        return this.cookies[host];
+        
+        //return an object with all cookies for this host as strings in array and a toObject function
+        return {data: this.cookies[host], toObject: function(){
+
+            var cookieData = [];
+
+            this.data.forEach(cookie => {
+                
+                var el = cookie.split('; ');
+                el = el[0].split('=');
+
+                var cookieObject = {}
+                cookieObject[el[0]] = el[1];
+                cookieData.push(cookieObject);
+
+            });
+
+            return cookieData;
+
+        }};
     }
 
     deleteAllCookies(){
+        //delete the object with all cookie data
         delete this.cookies;
-        this.cookies = [];
+        //create a new empty object for new cookies
+        this.cookies = {};
     }
 
     deleteCookies(host){
+        //delete all cookies for this host
         delete this.cookies[host];
     }
 
 }
 
 //export the class as module
-module.exports = requestManager;
+module.exports = easyHTTPClient;
