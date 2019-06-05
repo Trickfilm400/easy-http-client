@@ -1,7 +1,7 @@
 /*
 This code is under GPL-3.0 License
 Author: Feuerhamster
-GitHub: https://github.com/Feuerhamster/easy-request
+GitHub: https://github.com/Feuerhamster/easy-http-client
 */
 
 //make a new class
