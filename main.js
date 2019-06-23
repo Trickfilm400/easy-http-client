@@ -40,7 +40,12 @@ class easyHTTPClient{
             //make the data ready
             if(assignment.data){
                 //format data into querystring
-                var data = this.querystring_module.stringify(assignment.data);
+                if(assignment.json){
+                    var data = JSON.stringify(assignment.data);
+                }else{
+                    var data = this.querystring_module.stringify(assignment.data);
+                }
+                
             }else{
                 var data = "";
             }
@@ -64,6 +69,11 @@ class easyHTTPClient{
                     assignment.path += '?' + assignment.queryString;
                 }
 
+                var contentType = "application/x-www-form-urlencoded";
+                if(assignment.json){
+                    contentType = "application/json"
+                }
+
                 //set options
                 var options = {
                     host: assignment.host,
@@ -71,7 +81,7 @@ class easyHTTPClient{
                     path: assignment.path,
                     method: assignment.method,
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': contentType,
                         'Content-Length': Buffer.byteLength(data)
                     }
                 }
