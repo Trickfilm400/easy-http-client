@@ -25,41 +25,18 @@ class easyHTTPClient{
         if(assignment.method && assignment.host && typeof assignment.success == "function" && assignment.path){
 
             //set port if port is not set
-            if(!assignment.port){
-                //check if ssl is activated and set the default port
-                if(assignment.ssl){
-                    var port = 443;
-                }else{
-                    var port = 80;
-                }
-            }else{
-                //if a custom port is specified, take them
-                var port = assignment.port
-            }
+                                                        //check if ssl is activated and set the default port
+                                                                                    //if a custom port is specified, take them
+            var port = assignment.port == undefined ? (assignment.ssl ? 443 : 80) : assignment.port;
+            
+            //make the data ready            //format data into querystring
+            var data = assignment.data ? (assignment.json ? JSON.stringify(assignment.data) 
+                                          : this.querystring_module.stringify(assignment.data)) : "";
+            
 
-            //make the data ready
-            if(assignment.data){
-                //format data into querystring
-                if(assignment.json){
-                    var data = JSON.stringify(assignment.data);
-                }else{
-                    var data = this.querystring_module.stringify(assignment.data);
-                }
-                
-            }else{
-                var data = "";
-            }
-
-            //check if they want ssl
-            if(assignment.ssl){
-                //set the http module to ssl
-                var http_module = this.https_module;
-                var start = 'https://';
-            }else{
-                //set the default http module
-                var http_module = this.http_module;
-                var start = 'http://';
-            }
+            //check if ssl necessary
+            var [http_module, start] = assignment.ssl ? [this.https_module, 'https://'] : [this.http_module, 'http://']
+           
 
             //set options
             if(assignment.method == "POST" || assignment.method == "PUT"){
@@ -69,11 +46,8 @@ class easyHTTPClient{
                     assignment.path += '?' + assignment.queryString;
                 }
 
-                var contentType = "application/x-www-form-urlencoded";
-                if(assignment.json){
-                    contentType = "application/json"
-                }
-
+                var contentType = assignment.json ? "application/json" : "application/x-www-form-urlencoded";
+                
                 //set options
                 var options = {
                     host: assignment.host,
